@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="24dp"
+    android:background="@color/fitness_light_background"
+    tools:context=".HomeFragment">
+
+    <!-- Logo -->
+    <ImageView
+        android:id="@+id/imgLogo"
+        android:layout_width="140dp"
+        android:layout_height="140dp"
+        android:src="@drawable/logo"
+        android:contentDescription="Logo"
+        android:layout_marginBottom="24dp"
+        android:scaleType="centerCrop"
+        android:background="@drawable/rounded_bg"
+        android:clipToOutline="true"/>
+
+    <!-- Inspiration Text -->
+    <TextView
+        android:id="@+id/txtInspiration"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Push Harder. Become Stronger."
+        android:textSize="22sp"
+        android:textColor="@color/fitness_blue"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_marginBottom="40dp" />
+
+    <!-- Login Button -->
+    <Button
+        android:id="@+id/btnLogin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Login"
+        android:textSize="18sp"
+        android:textColor="#FFFFFF"
+        android:padding="12dp"
+        android:backgroundTint="@color/fitness_button_blue"
+        android:layout_marginBottom="10dp" />
+
+    <!-- Register Button -->
+    <Button
+        android:id="@+id/btnRegister"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Register"
+        android:textSize="18sp"
+        android:textColor="#FFFFFF"
+        android:padding="12dp"
+        android:backgroundTint="@color/fitness_button_purple" />
+
+</LinearLayout>
