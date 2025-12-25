@@ -6,7 +6,7 @@
     android:background="@color/fitness_light_background"
     tools:context=".RegisterFragment"
     android:orientation="vertical"
-    android:fitsSystemWindows="true"
+    android_fitsSystemWindows="true"
     android:gravity="center">
 
     <LinearLayout
@@ -130,17 +130,31 @@
             android:textColor="#000"
             android:textColorHint="#777" />
 
-        <EditText
-            android:id="@+id/editTextGender"
+        <RadioGroup
+            android:id="@+id/radioGroupGender"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:hint="Gender"
-            android:textSize="16sp"
-            android:layout_marginTop="14dp"
-            android:background="@drawable/edit_text_background"
-            android:padding="14dp"
-            android:textColor="#000"
-            android:textColorHint="#777" />
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="14dp">
+
+            <RadioButton
+                android:id="@+id/radioMale"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Male" />
+
+            <RadioButton
+                android:id="@+id/radioFemale"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Female" />
+
+            <RadioButton
+                android:id="@+id/radioOther"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Other" />
+        </RadioGroup>
 
         <!-- Buttons -->
         <LinearLayout

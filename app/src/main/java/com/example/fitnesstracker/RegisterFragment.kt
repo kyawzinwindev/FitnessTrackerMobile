@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.RadioButton
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.text.HtmlCompat
@@ -47,7 +48,7 @@ class RegisterFragment : Fragment() {
                 editTextWeight.setText("")
                 editTextHeight.setText("")
                 editTextAge.setText("")
-                editTextGender.setText("")
+                radioGroupGender.clearCheck()
             }
         }
 
@@ -72,7 +73,12 @@ class RegisterFragment : Fragment() {
         val weight = binding.editTextWeight.text.toString()
         val height = binding.editTextHeight.text.toString()
         val age = binding.editTextAge.text.toString()
-        val gender = binding.editTextGender.text.toString()
+        val selectedGenderId = binding.radioGroupGender.checkedRadioButtonId
+        val gender = if (selectedGenderId != -1) {
+            view?.findViewById<RadioButton>(selectedGenderId)?.text.toString()
+        } else {
+            ""
+        }
 
         if(firstname.isEmpty()){
             binding.editTextFirstName.error = "Enter your firstname here..."
@@ -91,7 +97,7 @@ class RegisterFragment : Fragment() {
         }else if(age.isEmpty()){
             binding.editTextAge.error = "Enter your age here..."
         }else if(gender.isEmpty()){
-            binding.editTextGender.error = "Enter your gender here..."
+            Toast.makeText(context, "Please select a gender", Toast.LENGTH_SHORT).show()
         }else{
             registerUser(firstname, lastname, email, username, password, weight, height, age, gender)
         }
