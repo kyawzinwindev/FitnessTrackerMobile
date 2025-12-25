@@ -1,59 +1,105 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:padding="24dp"
-    android:background="@color/fitness_light_background"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
     tools:context=".HomeFragment">
 
-    <!-- Logo -->
-    <ImageView
-        android:id="@+id/imgLogo"
-        android:layout_width="140dp"
-        android:layout_height="140dp"
-        android:src="@drawable/logo"
-        android:contentDescription="Logo"
-        android:layout_marginBottom="24dp"
-        android:scaleType="centerCrop"
-        android:background="@drawable/rounded_bg"
-        android:clipToOutline="true"/>
-
-    <!-- Inspiration Text -->
     <TextView
-        android:id="@+id/txtInspiration"
-        android:layout_width="match_parent"
+        android:id="@+id/welcome_text"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Push Harder. Become Stronger."
-        android:textSize="22sp"
-        android:textColor="@color/fitness_blue"
+        android:layout_marginTop="32dp"
+        android:textSize="24sp"
         android:textStyle="bold"
-        android:gravity="center"
-        android:layout_marginBottom="40dp" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="Hello, User" />
 
-    <!-- Login Button -->
-    <Button
-        android:id="@+id/btnLogin"
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/motivational_quote"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Login"
-        android:textSize="18sp"
-        android:textColor="#FFFFFF"
-        android:padding="12dp"
-        android:backgroundTint="@color/fitness_button_blue"
-        android:layout_marginBottom="10dp" />
+        android:layout_marginTop="8dp"
+        android:text="Our fitness tracker app helps you stay motivated by turning everyday activities into measurable progress. By tracking workouts, calories, and goals, it keeps you focused, consistent, and in control of your health. No matter where you start, every step brings you closer to a stronger and healthier you."
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/welcome_text" />
 
-    <!-- Register Button -->
     <Button
-        android:id="@+id/btnRegister"
-        android:layout_width="match_parent"
+        android:id="@+id/lets_do_it_button"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Register"
-        android:textSize="18sp"
-        android:textColor="#FFFFFF"
-        android:padding="12dp"
-        android:backgroundTint="@color/fitness_button_purple" />
+        android:layout_marginTop="16dp"
+        android:text="Let's do it"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/motivational_quote" />
 
-</LinearLayout>
+    <com.github.mikephil.charting.charts.BarChart
+        android:id="@+id/chart"
+        android:layout_width="0dp"
+        android:layout_height="300dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/lets_do_it_button" />
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/group_chart_state"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:constraint_referenced_ids="chart,lets_do_it_button"
+        tools:visibility="visible"/>
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/group_empty_state"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:constraint_referenced_ids="empty_state_image,empty_state_text,create_activity_button_home" />
+
+    <ImageView
+        android:id="@+id/empty_state_image"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:src="@drawable/logo"
+        app:layout_constraintBottom_toTopOf="@+id/empty_state_text"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed" />
+
+    <TextView
+        android:id="@+id/empty_state_text"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="32dp"
+        android:text="No activities yet. Start your fitness journey now!"
+        android:textAlignment="center"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/create_activity_button_home"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/empty_state_image" />
+
+    <Button
+        android:id="@+id/create_activity_button_home"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Create First Activity"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/empty_state_text" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

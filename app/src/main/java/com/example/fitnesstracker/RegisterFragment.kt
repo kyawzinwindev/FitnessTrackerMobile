@@ -16,17 +16,17 @@ import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.example.fitnesstracker.databinding.FragmentRegisterBinding
 import org.json.JSONObject
-import kotlin.toString
 
 class RegisterFragment : Fragment() {
 
-    private lateinit var binding: FragmentRegisterBinding
+    private var _binding: FragmentRegisterBinding? = null
+    private val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        binding = FragmentRegisterBinding.inflate(inflater, container, false)
+    ): View {
+        _binding = FragmentRegisterBinding.inflate(inflater, container, false)
 
         binding.txtGotoLogin.setText(
             HtmlCompat.fromHtml("<u>Click Here to Login...</u>",
@@ -34,8 +34,7 @@ class RegisterFragment : Fragment() {
         )
 
         binding.txtGotoLogin.setOnClickListener {
-            val action = RegisterFragmentDirections.actionRegisterFragmentToLoginFragment()
-            findNavController().navigate(action)
+            findNavController().navigate(RegisterFragmentDirections.actionRegisterFragmentToLoginFragment())
         }
 
         binding.btnSingUpClear.setOnClickListener {
@@ -45,6 +44,10 @@ class RegisterFragment : Fragment() {
                 editTextEmail.setText("")
                 editTextUsername.setText("")
                 editTextPassword.setText("")
+                editTextWeight.setText("")
+                editTextHeight.setText("")
+                editTextAge.setText("")
+                editTextGender.setText("")
             }
         }
 
@@ -55,12 +58,21 @@ class RegisterFragment : Fragment() {
         return binding.root
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
     private fun signUpAction() {
         val firstname = binding.editTextFirstName.text.toString()
         val lastname = binding.editTextLastName.text.toString()
         val email = binding.editTextEmail.text.toString()
         val username = binding.editTextUsername.text.toString()
         val password = binding.editTextPassword.text.toString()
+        val weight = binding.editTextWeight.text.toString()
+        val height = binding.editTextHeight.text.toString()
+        val age = binding.editTextAge.text.toString()
+        val gender = binding.editTextGender.text.toString()
 
         if(firstname.isEmpty()){
             binding.editTextFirstName.error = "Enter your firstname here..."
@@ -72,12 +84,16 @@ class RegisterFragment : Fragment() {
             binding.editTextUsername.error = "Enter your username here..."
         }else if(password.isEmpty()){
             binding.editTextPassword.error = "Enter your password here..."
+        }else if(weight.isEmpty()){
+            binding.editTextWeight.error = "Enter your weight here..."
+        }else if(height.isEmpty()){
+            binding.editTextHeight.error = "Enter your height here..."
+        }else if(age.isEmpty()){
+            binding.editTextAge.error = "Enter your age here..."
+        }else if(gender.isEmpty()){
+            binding.editTextGender.error = "Enter your gender here..."
         }else{
-//            Toast.makeText(context,"Register Successful", Toast.LENGTH_LONG).show()
-//            val action = RegisterFragmentDirections.actionRegisterFragmentToLoginFragment()
-//            findNavController().navigate(action)
-
-            registerUser(firstname, lastname, email, username, password)
+            registerUser(firstname, lastname, email, username, password, weight, height, age, gender)
         }
     }
 
@@ -86,20 +102,23 @@ class RegisterFragment : Fragment() {
         lastname: String,
         email: String,
         username: String,
-        password: String
+        password: String,
+        weight: String,
+        height: String,
+        age: String,
+        gender: String
     ) {
         val url = "http://10.0.2.2:81/FitnessTrackerAPI/controllers/register_controller.php"
         val request = object:StringRequest(Method.POST, url,
             Response.Listener{
                     response->
+                if (_binding == null) return@Listener
                 Log.d("Sign Up", "***Response:$response")
 
                 val obj = JSONObject(response)
                 if(obj.get("status") == "success"){
                     Toast.makeText(context,obj.get("message").toString(),Toast.LENGTH_LONG).show()
-
-                    val action = RegisterFragmentDirections.actionRegisterFragmentToLoginFragment()
-                    findNavController().navigate(action)
+                    findNavController().navigate(RegisterFragmentDirections.actionRegisterFragmentToLoginFragment())
 
                 }else if (obj.get("status") == "existed"){
                     showAlert(obj.get("message").toString())
@@ -107,22 +126,27 @@ class RegisterFragment : Fragment() {
             },
             Response.ErrorListener{
                     error->
+                if (_binding == null) return@ErrorListener
                 Log.d("Sign Up", "***Error:$error")
             }){
-            override fun getParams(): Map<String, String>? {
+            override fun getParams(): Map<String, String> {
                 return mapOf("fname" to firstname,
                     "lname" to lastname,
                     "email" to email,
                     "username" to username,
-                    "password" to password)
+                    "password" to password,
+                    "weight" to weight,
+                    "height" to height,
+                    "age" to age,
+                    "gender" to gender)
             }
         }
-        Volley.newRequestQueue(context).add(request)
-        Log.d("Sign Up Request", "***Register User")
+        Volley.newRequestQueue(requireContext()).add(request)
     }
 
     private fun showAlert(msg: String) {
-        val alert = AlertDialog.Builder(requireContext())
+        val context = context ?: return
+        val alert = AlertDialog.Builder(context)
         alert.setTitle("Warning")
             .setMessage(msg)
             .setCancelable(false)
@@ -133,6 +157,4 @@ class RegisterFragment : Fragment() {
         val alertDialog = alert.create()
         alertDialog.show()
     }
-
-
 }
