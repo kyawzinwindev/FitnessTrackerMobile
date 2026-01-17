@@ -56,4 +56,5 @@ dependencies {
     implementation("com.android.volley:volley:1.2.1")
     implementation(libs.mpandroidchart)
     implementation(libs.play.services.base)
+    implementation(libs.play.services.location)
 }

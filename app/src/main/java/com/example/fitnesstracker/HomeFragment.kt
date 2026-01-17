@@ -1,5 +1,7 @@
 package com.example.fitnesstracker
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
@@ -7,6 +9,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.app.ActivityCompat
 import androidx.navigation.fragment.findNavController
 import com.android.volley.Request
 import com.android.volley.toolbox.StringRequest
@@ -19,6 +22,8 @@ import com.github.mikephil.charting.data.BarEntry
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.github.mikephil.charting.utils.ColorTemplate
 import com.github.mikephil.charting.utils.Utils
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -27,6 +32,8 @@ class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
+
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -37,12 +44,18 @@ class HomeFragment : Fragment() {
         // Initialize the chart utils for unit conversion
         Utils.init(requireContext())
 
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+
         binding.createActivityButtonHome.setOnClickListener {
             findNavController().navigate(R.id.createActivityFragment)
         }
 
         binding.letsDoItButton.setOnClickListener {
             findNavController().navigate(R.id.createActivityFragment)
+        }
+
+        binding.fabLocation.setOnClickListener {
+            requestLocationPermission()
         }
 
         return binding.root
@@ -154,6 +167,35 @@ class HomeFragment : Fragment() {
         binding.chart.legend.isEnabled = false
         binding.chart.animateY(1000)
         binding.chart.invalidate()
+    }
+
+    private fun requestLocationPermission() {
+        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 100)
+        } else {
+            getLastLocation()
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 100) {
+            if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                getLastLocation()
+            }
+        }
+    }
+
+    private fun getLastLocation() {
+        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                if (location != null) {
+                    binding.latitudeText.text = "Latitude: ${location.latitude}"
+                    binding.longitudeText.text = "Longitude: ${location.longitude}"
+                }
+            }
+        }
     }
 
     override fun onDestroyView() {
