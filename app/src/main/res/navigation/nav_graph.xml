@@ -49,6 +49,12 @@
         tools:layout="@layout/fragment_create_activity" />
 
     <fragment
+        android:id="@+id/goalFragment"
+        android:name="com.example.fitnesstracker.GoalFragment"
+        android:label="Goal"
+        tools:layout="@layout/fragment_goal" />
+
+    <fragment
         android:id="@+id/profileFragment"
         android:name="com.example.fitnesstracker.ProfileFragment"
         android:label="Profile"
