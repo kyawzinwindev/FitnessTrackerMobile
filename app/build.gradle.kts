@@ -30,6 +30,7 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+        isCoreLibraryDesugaringEnabled = true
     }
     kotlinOptions {
         jvmTarget = "11"
@@ -57,4 +58,5 @@ dependencies {
     implementation(libs.mpandroidchart)
     implementation(libs.play.services.base)
     implementation(libs.play.services.location)
+    coreLibraryDesugaring(libs.desugarJdkLibs)
 }

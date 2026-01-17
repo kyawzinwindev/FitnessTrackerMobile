@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.navigation.fragment.findNavController
 import com.android.volley.Request
@@ -25,8 +26,10 @@ import com.github.mikephil.charting.utils.Utils
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import org.json.JSONArray
-import org.json.JSONException
 import org.json.JSONObject
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 
 class HomeFragment : Fragment() {
 
@@ -35,134 +38,256 @@ class HomeFragment : Fragment() {
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
+    private var userGoal: JSONObject? = null
+    private var userActivities: JSONArray? = null
+    private var isGoalRequestFinished = false
+    private var isActivityRequestFinished = false
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
-
-        // Initialize the chart utils for unit conversion
         Utils.init(requireContext())
-
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
-
-        binding.createActivityButtonHome.setOnClickListener {
-            findNavController().navigate(R.id.createActivityFragment)
-        }
-
-        binding.letsDoItButton.setOnClickListener {
-            findNavController().navigate(R.id.createActivityFragment)
-        }
-
-        binding.fabLocation.setOnClickListener {
-            requestLocationPermission()
-        }
-
         return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        binding.letsDoItButton.setOnClickListener { findNavController().navigate(R.id.createActivityFragment) }
+        binding.createActivityButtonHome.setOnClickListener { findNavController().navigate(R.id.createActivityFragment) }
+        binding.fabLocation.setOnClickListener { requestLocationPermission() }
     }
 
     override fun onResume() {
         super.onResume()
         val sessionManager = SessionManager(requireContext())
-        val firstName = sessionManager.getFirstName()
-        val lastName = sessionManager.getLastName()
+        binding.welcomeText.text = "Hello, ${sessionManager.getFirstName() ?: ""} ${sessionManager.getLastName() ?: ""}"
 
-        binding.welcomeText.text = "Hello, ${firstName ?: ""} ${lastName ?: ""}"
-
+        isGoalRequestFinished = false
+        isActivityRequestFinished = false
+        userGoal = null
+        userActivities = null
+        fetchUserGoal(sessionManager.getUserId())
         fetchActivityHistory(sessionManager.getUserId())
+    }
+
+    private fun fetchUserGoal(userId: Int) {
+        val url = "http://10.0.2.2:81/FitnessTrackerAPI/controllers/GoalController.php?user_id=$userId"
+        val request = StringRequest(Request.Method.GET, url,
+            { response ->
+                val trimmedResponse = response.trim()
+                if (trimmedResponse.isNotBlank() && trimmedResponse.lowercase() != "null") {
+                    try {
+                        val goals = JSONArray(trimmedResponse)
+                        if (goals.length() > 0 && !goals.isNull(0)) {
+                            userGoal = goals.getJSONObject(0)
+                        }
+                    } catch (e: Exception) {
+                        Log.e("HomeFragment", "Error parsing goal data: $response", e)
+                    }
+                }
+                isGoalRequestFinished = true
+                checkAllDataFetched()
+            },
+            { error ->
+                Log.e("HomeFragment", "Volley error fetching goal: ${error.message}")
+                isGoalRequestFinished = true
+                checkAllDataFetched()
+            })
+        request.setShouldCache(false)
+        Volley.newRequestQueue(requireContext()).add(request)
     }
 
     private fun fetchActivityHistory(userId: Int) {
         val url = "http://10.0.2.2:81/FitnessTrackerAPI/controllers/ActivitiesController.php?user_id=$userId"
         val request = StringRequest(Request.Method.GET, url,
             { response ->
-                if (_binding == null) return@StringRequest
-                Log.d("Home", "Raw Server Response: $response")
-                if (response.isNullOrBlank()) {
-                    showEmptyState()
-                    return@StringRequest
-                }
-
                 try {
                     val jsonObject = JSONObject(response)
                     if (jsonObject.optString("status") == "success") {
-                        val activities = jsonObject.optJSONArray("data")
-                        if (activities != null && activities.length() > 0) {
-                            binding.groupChartState.visibility = View.VISIBLE
-                            binding.groupEmptyState.visibility = View.GONE
-                            setupChart(activities)
-                        } else {
-                            showEmptyState()
-                        }
-                    } else {
-                        showEmptyState()
+                        userActivities = jsonObject.optJSONArray("data")
                     }
                 } catch (e: Exception) {
-                    Log.e("Home", "Failed to parse activity history: $response", e)
-                    showEmptyState()
+                    Log.e("HomeFragment", "Error parsing activity data: $response", e)
                 }
+                isActivityRequestFinished = true
+                checkAllDataFetched()
             },
             { error ->
-                if (_binding == null) return@StringRequest
-                Log.e("Home", "Volley error: ${error.message}")
-                showEmptyState()
+                Log.e("HomeFragment", "Volley error fetching activities: ${error.message}")
+                isActivityRequestFinished = true
+                checkAllDataFetched()
             })
-
         request.setShouldCache(false)
         Volley.newRequestQueue(requireContext()).add(request)
     }
 
-    private fun showEmptyState() {
-        binding.groupChartState.visibility = View.GONE
-        binding.groupEmptyState.visibility = View.VISIBLE
+    private fun checkAllDataFetched() {
+        if (isGoalRequestFinished && isActivityRequestFinished && _binding != null) {
+            updateUi()
+        }
+    }
+
+    private fun updateUi() {
+        // Check if there's an active goal to show progress
+        val hasActiveGoal = hasActiveGoal()
+
+        // Check if there are activities to show chart
+        val hasActivities = userActivities != null && userActivities!!.length() > 0
+
+        // Handle the empty state first
+        if (!hasActivities && !hasActiveGoal) {
+            // No activities and no active goal - show empty state
+            binding.groupContentState.visibility = View.GONE
+            binding.groupEmptyState.visibility = View.VISIBLE
+            binding.goalProgressCard.visibility = View.GONE
+            return
+        }
+
+        // Show content state if there's either activities or an active goal
+        binding.groupContentState.visibility = View.VISIBLE
+        binding.groupEmptyState.visibility = View.GONE
+
+        // Update goal progress visibility based on active goal
+        updateGoalProgress()
+
+        // Setup chart if there are activities
+        if (hasActivities) {
+            setupChart(userActivities!!)
+        } else {
+            // Hide chart if no activities
+            binding.chart.visibility = View.GONE
+        }
+    }
+
+    private fun hasActiveGoal(): Boolean {
+        val goal = userGoal ?: return false
+
+        val isAchieved = goal.optInt("is_achieved", 0) == 1
+        val goalCalories = goal.optDouble("goal_calories_burned", 0.0)
+
+        // Only return true if there's a goal that's not achieved and has positive calories target
+        return !isAchieved && goalCalories > 0
+    }
+
+    private fun updateGoalProgress() {
+        val goal = userGoal ?: run {
+            binding.goalProgressCard.visibility = View.GONE
+            return
+        }
+
+        val isAchieved = goal.optInt("is_achieved", 0) == 1
+        val goalCalories = goal.optDouble("goal_calories_burned", 0.0)
+
+        // Hide progress card if goal is achieved or has invalid calories target
+        if (isAchieved || goalCalories <= 0) {
+            binding.goalProgressCard.visibility = View.GONE
+            return
+        }
+
+        binding.goalProgressCard.visibility = View.VISIBLE
+        var totalCaloriesInRange = 0.0
+
+        try {
+            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+            val goalStartDate = LocalDate.parse(goal.optString("start_date"), formatter)
+            val goalEndDateStr = goal.optString("end_date")
+            val goalEndDate = if (goalEndDateStr.isNotEmpty()) LocalDate.parse(goalEndDateStr, formatter) else null
+
+            val activities = userActivities
+            if (activities != null) {
+                for (i in 0 until activities.length()) {
+                    val activity = activities.getJSONObject(i)
+                    try {
+                        val activityDateStr = activity.optString("date")
+                        if (activityDateStr.length >= 10) {
+                            val activityDate = LocalDate.parse(activityDateStr.substring(0, 10), formatter)
+                            if (isDateInRange(activityDate, goalStartDate, goalEndDate)) {
+                                totalCaloriesInRange += activity.optDouble("calories_burned", 0.0)
+                            }
+                        }
+                    } catch (e: DateTimeParseException) {
+                        Log.w("HomeFragment", "Skipping activity with malformed date: ${activity.optString("date")}", e)
+                    }
+                }
+            }
+        } catch (e: DateTimeParseException) {
+            totalCaloriesInRange = 0.0
+            Log.e("HomeFragment", "Could not parse goal dates. Displaying 0% progress.", e)
+        }
+
+        val progressPercentage = if (goalCalories > 0) ((totalCaloriesInRange / goalCalories) * 100).toInt() else 0
+        binding.goalProgressBar.progress = progressPercentage.coerceIn(0, 100)
+        binding.goalProgressText.text = "${totalCaloriesInRange.toInt()} / ${goalCalories.toInt()} kcal"
+
+        if (!isAchieved && totalCaloriesInRange >= goalCalories) {
+            markGoalAsAchieved(goal.optInt("id"))
+        }
+    }
+
+    private fun isDateInRange(date: LocalDate, startDate: LocalDate, endDate: LocalDate?): Boolean {
+        val isAfterStartOrOn = !date.isBefore(startDate)
+        val isBeforeEndOrOn = endDate == null || !date.isAfter(endDate)
+        return isAfterStartOrOn && isBeforeEndOrOn
+    }
+
+    private fun markGoalAsAchieved(goalId: Int) {
+        val url = "http://10.0.2.2:81/FitnessTrackerAPI/controllers/GoalController.php"
+        val request = object : StringRequest(Method.POST, url,
+            { response ->
+                Toast.makeText(context, "Congratulations! Goal Achieved!", Toast.LENGTH_LONG).show()
+                onResume()
+            },
+            { error ->
+                Log.e("HomeFragment", "Error updating goal to achieved: ${error.message}")
+            }) {
+            override fun getParams(): Map<String, String> = mapOf(
+                "action" to "update",
+                "id" to goalId.toString(),
+                "is_achieved" to "1"
+            )
+        }
+        Volley.newRequestQueue(requireContext()).add(request)
     }
 
     private fun setupChart(activities: JSONArray) {
         val activityTypes = arrayOf("Running", "Cycling", "Swimming", "Hiking", "Yoga", "WeightLifting")
         val caloriesPerActivity = mutableMapOf<String, Float>()
-        for (type in activityTypes) {
-            caloriesPerActivity[type] = 0f
-        }
+        activityTypes.forEach { caloriesPerActivity[it] = 0f }
 
         for (i in 0 until activities.length()) {
             val activity = activities.getJSONObject(i)
             val type = activity.optString("activity_type")
-            val calories = activity.optInt("calories_burned", 0).toFloat()
+            val calories = activity.optDouble("calories_burned", 0.0).toFloat()
             if (caloriesPerActivity.containsKey(type)) {
                 caloriesPerActivity[type] = caloriesPerActivity.getValue(type) + calories
             }
         }
 
         val entries = ArrayList<BarEntry>()
-        for ((index, type) in activityTypes.withIndex()) {
+        activityTypes.forEachIndexed { index, type ->
             entries.add(BarEntry(index.toFloat(), caloriesPerActivity[type] ?: 0f))
         }
 
-        val dataSet = BarDataSet(entries, "Total Calories Burned")
-        dataSet.colors = ColorTemplate.MATERIAL_COLORS.toList()
-        dataSet.valueTextColor = Color.BLACK
-        dataSet.valueTextSize = 12f
+        val dataSet = BarDataSet(entries, "Total Calories Burned").apply {
+            colors = ColorTemplate.MATERIAL_COLORS.toList()
+            valueTextColor = Color.BLACK
+            valueTextSize = 12f
+        }
 
-        val barData = BarData(dataSet)
-        binding.chart.data = barData
-
-        // Configure the X-axis
-        val xAxis = binding.chart.xAxis
-        xAxis.valueFormatter = IndexAxisValueFormatter(activityTypes)
-        xAxis.position = XAxis.XAxisPosition.BOTTOM
-        xAxis.granularity = 1f
-        xAxis.setLabelCount(activityTypes.size)
-        xAxis.labelRotationAngle = -45f
-        xAxis.textColor = Color.BLACK
-
-        // Definitive Fix: Use setViewPortOffsets with DP-to-Pixel conversion
-        val leftOffset = Utils.convertDpToPixel(40f)
-        val topOffset = Utils.convertDpToPixel(20f)
-        val rightOffset = Utils.convertDpToPixel(40f)
-        val bottomOffset = Utils.convertDpToPixel(80f) // Generous bottom offset
-        binding.chart.setViewPortOffsets(leftOffset, topOffset, rightOffset, bottomOffset)
-
-        // General chart styling
+        binding.chart.visibility = View.VISIBLE
+        binding.chart.data = BarData(dataSet)
+        binding.chart.xAxis.apply {
+            valueFormatter = IndexAxisValueFormatter(activityTypes)
+            position = XAxis.XAxisPosition.BOTTOM
+            granularity = 1f
+            labelCount = activityTypes.size
+            labelRotationAngle = -45f
+            textColor = Color.BLACK
+        }
+        binding.chart.setViewPortOffsets(Utils.convertDpToPixel(40f), Utils.convertDpToPixel(20f), Utils.convertDpToPixel(40f), Utils.convertDpToPixel(80f))
         binding.chart.description.isEnabled = false
         binding.chart.legend.isEnabled = false
         binding.chart.animateY(1000)
@@ -170,20 +295,17 @@ class HomeFragment : Fragment() {
     }
 
     private fun requestLocationPermission() {
-        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-            ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 100)
+        val permissions = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+        if (permissions.any { ActivityCompat.checkSelfPermission(requireContext(), it) != PackageManager.PERMISSION_GRANTED }) {
+            requestPermissions(permissions, 100)
         } else {
             getLastLocation()
         }
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == 100) {
-            if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                getLastLocation()
-            }
+        if (requestCode == 100 && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            getLastLocation()
         }
     }
 

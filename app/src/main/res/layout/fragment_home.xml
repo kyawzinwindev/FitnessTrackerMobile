@@ -19,16 +19,65 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:text="Hello, User" />
 
-    <TextView
-        android:id="@+id/motivational_quote"
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/goal_progress_card"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Our fitness tracker app helps you stay motivated by turning everyday activities into measurable progress. By tracking workouts, calories, and goals, it keeps you focused, consistent, and in control of your health. No matter where you start, every step brings you closer to a stronger and healthier you."
-        android:textSize="16sp"
+        android:layout_marginTop="16dp"
+        android:visibility="gone"
+        app:cardElevation="4dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/welcome_text" />
+        app:layout_constraintTop_toBottomOf="@+id/welcome_text"
+        tools:visibility="visible">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/goal_progress_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Goal Progress"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/goal_progress_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="0 / 5000 kcal" />
+
+            <ProgressBar
+                android:id="@+id/goal_progress_bar"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:progressTint="?attr/colorPrimary"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/goal_progress_title"
+                tools:progress="0" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Content State (Chart, button, etc.) -->
+    <com.github.mikephil.charting.charts.BarChart
+        android:id="@+id/chart"
+        android:layout_width="0dp"
+        android:layout_height="300dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/goal_progress_card" />
 
     <Button
         android:id="@+id/lets_do_it_button"
@@ -37,18 +86,8 @@
         android:layout_marginTop="16dp"
         android:text="Let's do it"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/motivational_quote" />
-
-    <com.github.mikephil.charting.charts.BarChart
-        android:id="@+id/chart"
-        android:layout_width="0dp"
-        android:layout_height="300dp"
-        android:layout_marginTop="16dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/lets_do_it_button" />
+        app:layout_constraintTop_toBottomOf="@id/chart" />
 
     <TextView
         android:id="@+id/latitude_text"
@@ -58,7 +97,7 @@
         android:text="Latitude: "
         android:textSize="16sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/chart" />
+        app:layout_constraintTop_toBottomOf="@id/lets_do_it_button" />
 
     <TextView
         android:id="@+id/longitude_text"
@@ -81,29 +120,23 @@
         app:layout_constraintTop_toTopOf="@id/latitude_text" />
 
     <androidx.constraintlayout.widget.Group
-        android:id="@+id/group_chart_state"
+        android:id="@+id/group_content_state"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"
-        app:constraint_referenced_ids="chart,lets_do_it_button,latitude_text,longitude_text,fab_location"
-        tools:visibility="visible" />
+        app:constraint_referenced_ids="chart,lets_do_it_button,latitude_text,longitude_text,fab_location" />
 
-    <androidx.constraintlayout.widget.Group
-        android:id="@+id/group_empty_state"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        app:constraint_referenced_ids="empty_state_image,empty_state_text,create_activity_button_home" />
-
+    <!-- Empty State -->
     <ImageView
         android:id="@+id/empty_state_image"
         android:layout_width="150dp"
         android:layout_height="150dp"
         android:src="@drawable/logo"
-        app:layout_constraintBottom_toTopOf="@+id/empty_state_text"
+        app:layout_constraintBottom_toTopOf="@id/empty_state_text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/goal_progress_card"
+        app:layout_constraintVertical_bias="0.3"
         app:layout_constraintVertical_chainStyle="packed" />
 
     <TextView
@@ -116,10 +149,10 @@
         android:text="No activities yet. Start your fitness journey now!"
         android:textAlignment="center"
         android:textSize="18sp"
-        app:layout_constraintBottom_toTopOf="@+id/create_activity_button_home"
+        app:layout_constraintBottom_toTopOf="@id/create_activity_button_home"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/empty_state_image" />
+        app:layout_constraintTop_toBottomOf="@id/empty_state_image" />
 
     <Button
         android:id="@+id/create_activity_button_home"
@@ -130,6 +163,13 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/empty_state_text" />
+        app:layout_constraintTop_toBottomOf="@id/empty_state_text" />
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/group_empty_state"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:constraint_referenced_ids="empty_state_image,empty_state_text,create_activity_button_home" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
