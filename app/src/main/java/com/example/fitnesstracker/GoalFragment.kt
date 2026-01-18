@@ -3,11 +3,11 @@ package com.example.fitnesstracker
 import android.app.DatePickerDialog
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.fragment.app.Fragment
 import com.android.volley.Request
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
@@ -24,6 +24,8 @@ class GoalFragment : Fragment() {
     private val binding get() = _binding!!
 
     private var existingGoal: JSONObject? = null
+    private var totalCaloriesBurned = 0.0
+    private var goalCalories = 0.0
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -39,144 +41,234 @@ class GoalFragment : Fragment() {
         setupDatePickers()
         fetchUserGoal()
 
-        binding.buttonSaveGoal.setOnClickListener { saveGoal() }
+        binding.buttonSaveGoal.setOnClickListener {
+            saveGoal()
+        }
     }
+
+    // ================= DATE PICKERS =================
 
     private fun setupDatePickers() {
-        binding.editTextStartDate.setOnClickListener { showDatePickerDialog(isStartDate = true) }
-        binding.editTextEndDate.setOnClickListener { showDatePickerDialog(isStartDate = false) }
+        binding.editTextStartDate.setOnClickListener { showDatePicker(true) }
+        binding.editTextEndDate.setOnClickListener { showDatePicker(false) }
     }
 
-    private fun showDatePickerDialog(isStartDate: Boolean) {
+    private fun showDatePicker(isStart: Boolean) {
         val calendar = Calendar.getInstance()
-        val datePickerDialog = DatePickerDialog(
+        DatePickerDialog(
             requireContext(),
-            { _, year, month, dayOfMonth ->
-                val selectedDate = Calendar.getInstance()
-                selectedDate.set(year, month, dayOfMonth)
-                val formattedDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(selectedDate.time)
-                if (isStartDate) {
-                    binding.editTextStartDate.setText(formattedDate)
-                } else {
-                    binding.editTextEndDate.setText(formattedDate)
-                }
+            { _, year, month, day ->
+                val selected = Calendar.getInstance()
+                selected.set(year, month, day)
+                val formatted =
+                    SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(selected.time)
+
+                if (isStart) binding.editTextStartDate.setText(formatted)
+                else binding.editTextEndDate.setText(formatted)
             },
             calendar.get(Calendar.YEAR),
             calendar.get(Calendar.MONTH),
             calendar.get(Calendar.DAY_OF_MONTH)
-        )
-        datePickerDialog.show()
+        ).show()
     }
 
+    // ================= FETCH GOAL =================
+
     private fun fetchUserGoal() {
-        val sessionManager = SessionManager(requireContext())
-        val userId = sessionManager.getUserId()
-        val url = "http://10.0.2.2:81/FitnessTrackerAPI/controllers/GoalController.php?user_id=$userId"
+        val userId = SessionManager(requireContext()).getUserId()
+        val url =
+            "http://10.0.2.2:81/FitnessTrackerAPI/controllers/GoalController.php?user_id=$userId"
 
         val request = StringRequest(Request.Method.GET, url,
             { response ->
                 if (_binding == null) return@StringRequest
-                val trimmedResponse = response.trim()
 
-                if (trimmedResponse.isNotBlank() && trimmedResponse.lowercase() != "null") {
-                    try {
-                        var goals: JSONArray? = null
-                        // DEFINITIVE FIX: Robustly handle if the API returns a single object or an array.
-                        if (trimmedResponse.startsWith("{")) {
-                            val jsonObject = JSONObject(trimmedResponse)
-                            if (jsonObject.optString("status") == "success") {
-                                val data = jsonObject.opt("data")
-                                if (data is JSONArray) {
-                                    goals = data
-                                } else if (data is JSONObject) {
-                                    // If the server sends a single object, wrap it in an array.
-                                    goals = JSONArray().put(data)
-                                }
-                            }
-                        } else if (trimmedResponse.startsWith("[")) {
-                            goals = JSONArray(trimmedResponse)
+                try {
+                    val json = JSONObject(response)
+                    if (json.optString("status") == "success") {
+                        val data = json.opt("data")
+                        val goals = when (data) {
+                            is JSONArray -> data
+                            is JSONObject -> JSONArray().put(data)
+                            else -> null
                         }
 
-                        if (goals != null && goals.length() > 0 && !goals.isNull(0)) {
+                        if (goals != null && goals.length() > 0) {
                             existingGoal = goals.getJSONObject(0)
-                            populateUiWithGoalData(existingGoal!!)
+                            populateGoalUI(existingGoal!!)
+                            fetchActivitiesForProgress(existingGoal!!)
                         } else {
                             setupCreateGoalUI()
                         }
-                    } catch (e: Exception) {
-                        Log.e("GoalFragment", "Error parsing goal response: $trimmedResponse", e)
+                    } else {
                         setupCreateGoalUI()
                     }
-                } else {
+                } catch (e: Exception) {
                     setupCreateGoalUI()
                 }
             },
-            { error ->
-                if (_binding == null) return@StringRequest
-                Log.e("GoalFragment", "Volley error fetching goal: ${error.message}")
+            {
                 setupCreateGoalUI()
             })
 
-        request.setShouldCache(false)
         Volley.newRequestQueue(requireContext()).add(request)
     }
 
-    private fun populateUiWithGoalData(goal: JSONObject) {
-        binding.goalInfoCard.visibility = View.VISIBLE
-        binding.textGoalCalories.text = "Target Calories: ${goal.optString("goal_calories_burned")}"
-        binding.textGoalStartDate.text = "Start Date: ${goal.optString("start_date")}"
-        binding.textGoalEndDate.text = "End Date: ${goal.optString("end_date")}"
+    // ================= FETCH ACTIVITIES (MATCHES PHP) =================
 
+    private fun fetchActivitiesForProgress(goal: JSONObject) {
+        val userId = SessionManager(requireContext()).getUserId()
+        val url =
+            "http://10.0.2.2:81/FitnessTrackerAPI/controllers/ActivitiesController.php"
+
+        val request = object : StringRequest(Method.POST, url,
+            StringRequest@{ response ->
+                if (_binding == null) return@StringRequest
+                Log.d("GoalFragment", "Activities response: $response")
+
+                try {
+                    val json = JSONObject(response)
+                    if (json.optString("status") == "success") {
+                        calculateProgress(goal, json.optJSONArray("data"))
+                    } else {
+                        updateProgressUI(0.0, goalCalories)
+                    }
+                } catch (e: Exception) {
+                    updateProgressUI(0.0, goalCalories)
+                }
+            },
+            {
+                updateProgressUI(0.0, goalCalories)
+            }) {
+
+            override fun getParams(): MutableMap<String, String> {
+                return hashMapOf(
+                    "action" to "get_by_date_range", // ✅ EXACT PHP MATCH
+                    "user_id" to userId.toString(),
+                    "start_date" to goal.optString("start_date"),
+                    "end_date" to goal.optString("end_date")
+                )
+            }
+        }
+
+        Volley.newRequestQueue(requireContext()).add(request)
+    }
+
+    // ================= PROGRESS CALCULATION =================
+
+    private fun calculateProgress(goal: JSONObject, activities: JSONArray?) {
+        goalCalories = goal.optDouble("goal_calories_burned", 0.0)
+
+        if (activities == null || activities.length() == 0) {
+            updateProgressUI(0.0, goalCalories)
+            return
+        }
+
+        var total = 0.0
+
+        for (i in 0 until activities.length()) {
+            val activity = activities.optJSONObject(i) ?: continue
+            total += activity.optDouble("calories_burned", 0.0)
+        }
+
+        totalCaloriesBurned = total
+        updateProgressUI(totalCaloriesBurned, goalCalories)
+    }
+
+    // ================= UI UPDATE =================
+
+    private fun updateProgressUI(burned: Double, target: Double) {
+        if (_binding == null) return
+
+        binding.textProgress.text =
+            "Burned: ${"%.1f".format(burned)} / ${"%.1f".format(target)} kcal"
+
+        val percent =
+            if (target > 0) ((burned / target) * 100).coerceIn(0.0, 100.0).toInt()
+            else 0
+
+        binding.progressBarCalories.progress = percent
+        binding.textProgressPercentage.text = "$percent%"
+    }
+
+    // ================= FORM UI =================
+
+    private fun populateGoalUI(goal: JSONObject) {
+        binding.goalInfoCard.visibility = View.VISIBLE
         binding.formTitle.text = "Update Your Goal"
+        binding.buttonSaveGoal.text = "Update Goal"
+
+        goalCalories = goal.optDouble("goal_calories_burned", 0.0)
+
+        binding.textGoalCalories.text =
+            "Target Calories: ${goal.optString("goal_calories_burned")}"
+        binding.textGoalStartDate.text =
+            "Start Date: ${goal.optString("start_date")}"
+        binding.textGoalEndDate.text =
+            "End Date: ${goal.optString("end_date")}"
+
         binding.editTextCalories.setText(goal.optString("goal_calories_burned"))
         binding.editTextStartDate.setText(goal.optString("start_date"))
         binding.editTextEndDate.setText(goal.optString("end_date"))
-        binding.buttonSaveGoal.text = "Update Goal"
     }
 
     private fun setupCreateGoalUI() {
         binding.goalInfoCard.visibility = View.GONE
         binding.formTitle.text = "Create Your Goal"
         binding.buttonSaveGoal.text = "Create Goal"
-        binding.editTextCalories.setText("")
-        binding.editTextStartDate.setText("")
-        binding.editTextEndDate.setText("")
+
+        binding.editTextCalories.text = null
+        binding.editTextStartDate.text = null
+        binding.editTextEndDate.text = null
+
         existingGoal = null
+        totalCaloriesBurned = 0.0
+        goalCalories = 0.0
     }
 
-    private fun saveGoal() {
-        val sessionManager = SessionManager(requireContext())
-        val calories = binding.editTextCalories.text.toString()
-        val startDate = binding.editTextStartDate.text.toString()
-        val endDate = binding.editTextEndDate.text.toString()
+    // ================= SAVE GOAL =================
 
-        if (calories.isEmpty() || startDate.isEmpty() || endDate.isEmpty()) {
-            Toast.makeText(context, "Please fill out all fields", Toast.LENGTH_SHORT).show()
+    private fun saveGoal() {
+        val session = SessionManager(requireContext())
+
+        val calories = binding.editTextCalories.text.toString()
+        val start = binding.editTextStartDate.text.toString()
+        val end = binding.editTextEndDate.text.toString()
+
+        if (calories.isBlank() || start.isBlank() || end.isBlank()) {
+            Toast.makeText(context, "Fill all fields", Toast.LENGTH_SHORT).show()
             return
         }
 
-        val url = "http://10.0.2.2:81/FitnessTrackerAPI/controllers/GoalController.php"
+        val url =
+            "http://10.0.2.2:81/FitnessTrackerAPI/controllers/GoalController.php"
+
         val request = object : StringRequest(Method.POST, url,
-            { response ->
-                Toast.makeText(context, "Goal saved successfully!", Toast.LENGTH_SHORT).show()
-                fetchUserGoal() // Refresh the goal display
+            {
+                Toast.makeText(context, "Goal saved", Toast.LENGTH_SHORT).show()
+                fetchUserGoal()
             },
-            { error ->
-                Toast.makeText(context, "Error saving goal: ${error.message}", Toast.LENGTH_SHORT).show()
+            {
+                Toast.makeText(context, "Save failed", Toast.LENGTH_SHORT).show()
             }) {
+
             override fun getParams(): MutableMap<String, String> {
-                val params = HashMap<String, String>()
-                params["user_id"] = sessionManager.getUserId().toString()
-                params["goal_calories_burned"] = calories
-                params["start_date"] = startDate
-                params["end_date"] = endDate
+                val params = hashMapOf(
+                    "user_id" to session.getUserId().toString(),
+                    "goal_calories_burned" to calories,
+                    "start_date" to start,
+                    "end_date" to end
+                )
+
                 if (existingGoal != null) {
                     params["action"] = "update"
                     params["id"] = existingGoal!!.optString("id")
                 }
+
                 return params
             }
         }
+
         Volley.newRequestQueue(requireContext()).add(request)
     }
 

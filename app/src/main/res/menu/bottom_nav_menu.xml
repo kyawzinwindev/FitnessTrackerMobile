@@ -15,7 +15,7 @@
     <item
         android:id="@+id/goalFragment"
         android:title="Goal"
-        android:icon="@drawable/ic_goal" />
+        android:icon="@drawable/ic_flag" />
     <item
         android:id="@+id/profileFragment"
         android:title="Profile"

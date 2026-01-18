@@ -63,4 +63,27 @@ class SessionManager(context: Context) {
     fun logoutUser() {
         clearSession()
     }
+
+    fun updateUser(
+        fname: String,
+        lname: String,
+        email: String,
+        username: String,
+        weight: Float,
+        height: Float,
+        age: Int,
+        gender: String
+    ) {
+        val editor = prefs.edit()
+        editor.putString(FNAME, fname)
+        editor.putString(LNAME, lname)
+        editor.putString(EMAIL, email)
+        editor.putString(USERNAME, username)
+        editor.putFloat(WEIGHT, weight)
+        editor.putFloat(HEIGHT, height)
+        editor.putInt(AGE, age)
+        editor.putString(GENDER, gender)
+        editor.apply()
+    }
+
 }
