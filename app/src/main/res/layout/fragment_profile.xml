@@ -1,150 +1,212 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true">
+    android:fillViewport="true"
+    android:focusableInTouchMode="true">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp"
+        android:paddingStart="16dp"
+        android:paddingTop="16dp"
+        android:paddingEnd="16dp"
         android:paddingBottom="120dp">
 
         <!-- First Name -->
         <TextView
+            android:id="@+id/labelFirstName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="First Name"
-            android:textStyle="bold"/>
+            android:textStyle="bold"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
 
         <EditText
             android:id="@+id/firstNameEditText"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:inputType="textPersonName"/>
+            android:inputType="textPersonName"
+            app:layout_constraintTop_toBottomOf="@id/labelFirstName"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
         <!-- Last Name -->
         <TextView
+            android:id="@+id/labelLastName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Last Name"
             android:textStyle="bold"
-            android:layout_marginTop="10dp"/>
+            android:layout_marginTop="12dp"
+            app:layout_constraintTop_toBottomOf="@id/firstNameEditText"
+            app:layout_constraintStart_toStartOf="parent" />
 
         <EditText
             android:id="@+id/lastNameEditText"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:inputType="textPersonName"/>
+            android:inputType="textPersonName"
+            app:layout_constraintTop_toBottomOf="@id/labelLastName"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
         <!-- Email -->
         <TextView
+            android:id="@+id/labelEmail"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Email"
             android:textStyle="bold"
-            android:layout_marginTop="10dp"/>
+            android:layout_marginTop="12dp"
+            app:layout_constraintTop_toBottomOf="@id/lastNameEditText"
+            app:layout_constraintStart_toStartOf="parent" />
 
         <EditText
             android:id="@+id/emailEditText"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:inputType="textEmailAddress"/>
+            android:inputType="textEmailAddress"
+            app:layout_constraintTop_toBottomOf="@id/labelEmail"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
         <!-- Username -->
         <TextView
+            android:id="@+id/labelUsername"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Username"
             android:textStyle="bold"
-            android:layout_marginTop="10dp"/>
+            android:layout_marginTop="12dp"
+            app:layout_constraintTop_toBottomOf="@id/emailEditText"
+            app:layout_constraintStart_toStartOf="parent" />
 
         <EditText
             android:id="@+id/usernameEditText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/labelUsername"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
         <!-- Weight -->
         <TextView
+            android:id="@+id/labelWeight"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Weight (kg)"
             android:textStyle="bold"
-            android:layout_marginTop="10dp"/>
-
-        <EditText
-            android:id="@+id/weightEditText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="numberDecimal"/>
+            android:layout_marginTop="12dp"
+            app:layout_constraintTop_toBottomOf="@id/usernameEditText"
+            app:layout_constraintStart_toStartOf="parent" />
 
         <!-- Height -->
+        <EditText
+            android:id="@+id/weightEditText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:inputType="numberDecimal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/labelWeight" />
+
         <TextView
+            android:id="@+id/labelHeight"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Height (cm)"
             android:textStyle="bold"
-            android:layout_marginTop="10dp"/>
+            android:layout_marginTop="12dp"
+            app:layout_constraintTop_toBottomOf="@id/weightEditText"
+            app:layout_constraintStart_toStartOf="parent" />
 
         <EditText
             android:id="@+id/heightEditText"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:inputType="numberDecimal"/>
+            android:inputType="numberDecimal"
+            app:layout_constraintTop_toBottomOf="@id/labelHeight"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
         <!-- Age -->
         <TextView
+            android:id="@+id/labelAge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Age"
             android:textStyle="bold"
-            android:layout_marginTop="10dp"/>
+            android:layout_marginTop="12dp"
+            app:layout_constraintTop_toBottomOf="@id/heightEditText"
+            app:layout_constraintStart_toStartOf="parent" />
 
         <EditText
             android:id="@+id/ageEditText"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:inputType="number"/>
+            android:inputType="number"
+            app:layout_constraintTop_toBottomOf="@id/labelAge"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
         <!-- Gender -->
         <TextView
+            android:id="@+id/labelGender"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Gender"
             android:textStyle="bold"
-            android:layout_marginTop="10dp"/>
+            android:layout_marginTop="12dp"
+            app:layout_constraintTop_toBottomOf="@id/ageEditText"
+            app:layout_constraintStart_toStartOf="parent" />
 
         <EditText
             android:id="@+id/genderEditText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:inputType="textCapWords"
+            app:layout_constraintTop_toBottomOf="@id/labelGender"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
         <!-- Change Password -->
         <TextView
+            android:id="@+id/labelPassword"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Change Password"
             android:textStyle="bold"
             android:textSize="16sp"
-            android:layout_marginTop="12dp"/>
+            android:layout_marginTop="24dp"
+            app:layout_constraintTop_toBottomOf="@id/genderEditText"
+            app:layout_constraintStart_toStartOf="parent" />
 
         <EditText
             android:id="@+id/passwordEditText"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:hint="New Password"
-            android:inputType="textPassword"/>
+            android:inputType="textPassword"
+            app:layout_constraintTop_toBottomOf="@id/labelPassword"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
         <!-- Update Button -->
         <Button
             android:id="@+id/updateProfileButton"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Update Profile"/>
+            android:text="Update Profile"
+            android:layout_marginTop="24dp"
+            app:layout_constraintTop_toBottomOf="@id/passwordEditText"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-    </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-</androidx.core.widget.NestedScrollView>
+</ScrollView>

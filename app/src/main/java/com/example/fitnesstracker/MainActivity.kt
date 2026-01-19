@@ -43,7 +43,6 @@ class MainActivity : AppCompatActivity() {
         navController.addOnDestinationChangedListener { _, destination, _ ->
             binding.toolbar.title = destination.label
 
-            // Show/hide UI elements based on the destination
             when (destination.id) {
                 R.id.loginFragment, R.id.registerFragment -> {
                     binding.bottomNavigation.visibility = View.GONE
@@ -68,7 +67,6 @@ class MainActivity : AppCompatActivity() {
                 val sessionManager = SessionManager(this)
                 sessionManager.clearSession()
 
-                // Navigate to the login fragment and clear the back stack.
                 val navOptions = NavOptions.Builder()
                     .setPopUpTo(R.id.nav_graph, true)
                     .build()

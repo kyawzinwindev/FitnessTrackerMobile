@@ -64,7 +64,7 @@ class ProfileFragment : Fragment() {
                     val jsonResponse = JSONObject(response)
                     if (jsonResponse.optString("status") == "success") {
                         Toast.makeText(requireContext(), "Profile updated successfully", Toast.LENGTH_SHORT).show()
-                        // Update the session with the latest user data
+
                         val updatedUser = JSONObject()
                         updatedUser.put("firstname", binding.firstNameEditText.text.toString())
                         updatedUser.put("lastname", binding.lastNameEditText.text.toString())

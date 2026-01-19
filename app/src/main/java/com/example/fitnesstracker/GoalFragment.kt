@@ -46,7 +46,7 @@ class GoalFragment : Fragment() {
         }
     }
 
-    // ================= DATE PICKERS =================
+
 
     private fun setupDatePickers() {
         binding.editTextStartDate.setOnClickListener { showDatePicker(true) }
@@ -72,7 +72,7 @@ class GoalFragment : Fragment() {
         ).show()
     }
 
-    // ================= FETCH GOAL =================
+
 
     private fun fetchUserGoal() {
         val userId = SessionManager(requireContext()).getUserId()
@@ -114,7 +114,7 @@ class GoalFragment : Fragment() {
         Volley.newRequestQueue(requireContext()).add(request)
     }
 
-    // ================= FETCH ACTIVITIES (MATCHES PHP) =================
+
 
     private fun fetchActivitiesForProgress(goal: JSONObject) {
         val userId = SessionManager(requireContext()).getUserId()
@@ -154,8 +154,6 @@ class GoalFragment : Fragment() {
         Volley.newRequestQueue(requireContext()).add(request)
     }
 
-    // ================= PROGRESS CALCULATION =================
-
     private fun calculateProgress(goal: JSONObject, activities: JSONArray?) {
         goalCalories = goal.optDouble("goal_calories_burned", 0.0)
 
@@ -175,7 +173,7 @@ class GoalFragment : Fragment() {
         updateProgressUI(totalCaloriesBurned, goalCalories)
     }
 
-    // ================= UI UPDATE =================
+
 
     private fun updateProgressUI(burned: Double, target: Double) {
         if (_binding == null) return
@@ -191,7 +189,6 @@ class GoalFragment : Fragment() {
         binding.textProgressPercentage.text = "$percent%"
     }
 
-    // ================= FORM UI =================
 
     private fun populateGoalUI(goal: JSONObject) {
         binding.goalInfoCard.visibility = View.VISIBLE
@@ -226,7 +223,6 @@ class GoalFragment : Fragment() {
         goalCalories = 0.0
     }
 
-    // ================= SAVE GOAL =================
 
     private fun saveGoal() {
         val session = SessionManager(requireContext())

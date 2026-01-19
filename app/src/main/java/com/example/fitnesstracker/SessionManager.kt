@@ -22,9 +22,8 @@ class SessionManager(context: Context) {
 
     fun saveUser(user: JSONObject) {
         val editor = prefs.edit()
-        editor.putInt(USER_ID, user.optInt("id", getUserId())) // Persist user id if already exists
+        editor.putInt(USER_ID, user.optInt("id", getUserId()))
 
-        // Handle inconsistent API keys for names
         val fname = user.optString("firstname", user.optString("fname"))
         val lname = user.optString("lastname", user.optString("lname"))
 
@@ -59,7 +58,6 @@ class SessionManager(context: Context) {
         prefs.edit().clear().apply()
     }
 
-    // Added to be called from MainActivity to log the user out.
     fun logoutUser() {
         clearSession()
     }
