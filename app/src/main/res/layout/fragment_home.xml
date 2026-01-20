@@ -8,7 +8,6 @@
     android:paddingEnd="16dp"
     tools:context=".HomeFragment">
 
-    <!-- Welcome Title -->
     <TextView
         android:id="@+id/welcome_text"
         android:layout_width="wrap_content"
@@ -20,21 +19,18 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:text="Hello, User" />
 
-    <!-- Motivational Paragraph -->
     <TextView
         android:id="@+id/welcome_paragraph"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:text="Every step you take brings you closer to a healthier and stronger version of yourself. Let’s make today count 💪"
-        android:textSize="16sp"
+        android:text="Every step you take brings you closer to a healthier and stronger version of yourself. Let's make today count 💪"
         android:textColor="@android:color/darker_gray"
-        app:layout_constraintStart_toStartOf="parent"
+        android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/welcome_text" />
 
-
-    <!-- Chart -->
     <Button
         android:id="@+id/lets_do_it_button"
         android:layout_width="wrap_content"
@@ -45,7 +41,6 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/welcome_paragraph" />
-
 
     <TextView
         android:id="@+id/chart_title"
@@ -65,11 +60,10 @@
         android:layout_width="0dp"
         android:layout_height="300dp"
         android:layout_marginTop="8dp"
-        app:layout_constraintTop_toBottomOf="@id/chart_title"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/chart_title" />
 
-    <!-- Latitude -->
     <TextView
         android:id="@+id/latitude_text"
         android:layout_width="wrap_content"
@@ -77,10 +71,9 @@
         android:layout_marginTop="16dp"
         android:text="Latitude:"
         android:textSize="16sp"
-        app:layout_constraintTop_toBottomOf="@id/chart"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/chart" />
 
-    <!-- Longitude -->
     <TextView
         android:id="@+id/longitude_text"
         android:layout_width="wrap_content"
@@ -88,40 +81,56 @@
         android:layout_marginTop="8dp"
         android:text="Longitude:"
         android:textSize="16sp"
-        app:layout_constraintTop_toBottomOf="@id/latitude_text"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/latitude_text" />
 
-    <!-- Location FAB -->
+    <TextView
+        android:id="@+id/city_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="City:"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/longitude_text" />
+
+    <TextView
+        android:id="@+id/country_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Country:"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/city_text" />
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_location"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:contentDescription="Get Location"
         android:src="@android:drawable/ic_menu_mylocation"
-        app:layout_constraintTop_toTopOf="@id/latitude_text"
-        app:layout_constraintBottom_toBottomOf="@id/longitude_text"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintBottom_toBottomOf="@id/country_text"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/latitude_text" />
 
-    <!-- Content Group -->
     <androidx.constraintlayout.widget.Group
         android:id="@+id/group_content_state"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"
-        app:constraint_referenced_ids="chart,latitude_text,longitude_text,fab_location" />
+        app:constraint_referenced_ids="chart,latitude_text,longitude_text,city_text,country_text,fab_location" />
 
-    <!-- Empty State Image -->
     <ImageView
         android:id="@+id/empty_state_image"
         android:layout_width="150dp"
         android:layout_height="150dp"
         android:src="@drawable/logo"
-        app:layout_constraintTop_toBottomOf="@id/lets_do_it_button"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/lets_do_it_button"
         app:layout_constraintVertical_bias="0.3" />
 
-    <!-- Empty State Text -->
     <TextView
         android:id="@+id/empty_state_text"
         android:layout_width="0dp"
@@ -132,23 +141,21 @@
         android:text="No activities yet. Start your fitness journey now!"
         android:textAlignment="center"
         android:textSize="18sp"
-        app:layout_constraintTop_toBottomOf="@id/empty_state_image"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/empty_state_image" />
 
-    <!-- Create Activity Button -->
     <Button
         android:id="@+id/create_activity_button_home"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:text="Create First Activity"
-        app:layout_constraintTop_toBottomOf="@id/empty_state_text"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/empty_state_text" />
 
-    <!-- Empty State Group -->
     <androidx.constraintlayout.widget.Group
         android:id="@+id/group_empty_state"
         android:layout_width="wrap_content"
