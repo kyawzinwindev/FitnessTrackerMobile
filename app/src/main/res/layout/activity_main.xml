@@ -10,18 +10,20 @@
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/fitness_blue"
-        >
+        android:background="@color/fitness_blue">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
+            android:background="@color/fitness_blue"
             app:title="@string/app_name"
             app:titleTextAppearance="@style/Toolbar.TitleText"
+            app:titleTextColor="@color/white"
             app:menu="@menu/toolbar_menu" />
 
     </com.google.android.material.appbar.AppBarLayout>
+
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragmentContainer"
